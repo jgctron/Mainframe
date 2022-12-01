@@ -1,0 +1,36 @@
+****** ****ZAP****AUTOSAVE********** TOP OF DATA ******************************
+000001 //COBOL01 JOB  (SETUP),                                                
+000002 //             'TESTCOBOL1',                                            
+000003 //             CLASS=A,                                                
+000004 //             MSGCLASS=H,                                              
+000005 //             MSGLEVEL=(1,1)                                          
+000006 //********************************************************************  
+000007 //*                                                                    
+000008 //* NAME: SYS2.JCLLIB(TESTCOB)                                          
+000009 //*                                                                    
+000010 //* DESC: TEST COBOL INSTALLATION                                      
+000011 //*                                                                    
+000012 //********************************************************************  
+000013 //HELOWRLD EXEC COBUCLG                                                
+000014 //COB.SYSIN DD *                                                        
+000015   001  IDENTIFICATION DIVISION.                                        
+000016   002  PROGRAM-ID.  'BYE'.                                              
+000017   003  ENVIRONMENT DIVISION.                                            
+000018   004  CONFIGURATION SECTION.                                          
+000019   005  SOURCE-COMPUTER.  IBM-360.                                      
+000020   006  OBJECT-COMPUTER.  IBM-360.                                      
+  64KB ----+----1----+----2----+----3----+----4----+----5----+----6----+----7--
+000021   0065 SPECIAL-NAMES.                                                  
+000022   0066     CONSOLE IS CNSL.                                            
+000023   007  DATA DIVISION.                                                  
+000024   008  WORKING-STORAGE SECTION.                                        
+000025   009  77  JELLO-CONST   PIC X(18) VALUE 'OCT, 23RD'.                  
+000026   075  PROCEDURE DIVISION.                                              
+000027   090  000-DISPLAY.                                                    
+000028   100      DISPLAY JELLO-CONST UPON CNSL.                              
+000029   110      STOP RUN.                                                    
+000030 //LKED.SYSLIB DD DSNAME=SYS1.COBLIB,DISP=SHR                            
+000031 //            DD DSNAME=SYS1.LINKLIB,DISP=SHR                          
+000032 //GO.SYSPRINT DD SYSOUT=A                                              
+000033 //                                                                      
+****** ****ZAP****AUTOSAVE********* BOTTOM OF DATA ****************************
