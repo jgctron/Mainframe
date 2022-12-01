@@ -1,0 +1,108 @@
+000001 //PRIMPL1  JOB (PL1),                                                  
+000002 //             'Eratosthenes Sieve',                                  
+000003 //             CLASS=A,                                                
+000004 //             MSGCLASS=A,                                            
+000005 //             REGION=8M,TIME=1440,                                    
+000006 //             MSGLEVEL=(1,1)                                          
+000007 //********************************************************************
+000008 //*                                                                    
+000009 //* Name: SYS2.JCLLIB(PRIMPL1)                                        
+000010 //*                                                                    
+000011 //* Desc: Sieve of Eratosthenes programmed in PL/1.                    
+000012 //*       All prime numbers up to the value entered via                
+000013 //*       //GO.SYSIN DD are computed.                                  
+000014 //*                                                                    
+000015 //********************************************************************
+000016 //PRIMES   EXEC PL1LFCG,PARM.PL1L='LOAD,NODECK,OPT=02'                
+000017 //PL1L.SYSLIN DD UNIT=SYSDA                                            
+000018 //PL1L.SYSIN DD *                                                      
+000019  ERATOS: PROC OPTIONS (MAIN) REORDER;                                  
+000020                                                                        
+ 000021  DECLARE I BINARY FIXED (31);                                          
+ 000022  DECLARE J BINARY FIXED (31);                                          
+ 000023  DECLARE N BINARY FIXED (31);                                          
+ 000024  DECLARE SN BINARY FIXED (31);                                          
+ 000025  DECLARE P BINARY FIXED (31);                                          
+ 000026  DECLARE Q BINARY FIXED (31);                                          
+ 000027                                                                        
+ 000028  DECLARE SQRT BUILTIN;                                                  
+ 000029                                                                        
+ 000030  DECLARE SYSIN FILE;                                                    
+ 000031  DECLARE SYSPRINT FILE;                                                
+ 000032                                                                        
+ 000033  GET LIST (N) FILE(SYSIN);                                              
+ 000034  SN = SQRT(N);                                                          
+ 000035                                                                        
+ 000036  P = 1 + N / 32767;                                                    
+ 000037  IF (MOD(N,32767) = 0) THEN P = P - 1;                                  
+ 000038                                                                        
+ 000039  BEGIN;                                                                
+ 000040                                                                        
+ 000041    DECLARE PRIMES(P,32767) BIT (1) ALIGNED;                            
+000042    P = 1;                                                              
+000043    Q = 1;                                                              
+000044    DO I = 3 BY 2 TO N;                                                  
+000045      Q = Q + 2;                                                        
+000046      IF (Q > 32767) THEN DO;                                            
+000047        Q = Q - 32767;                                                  
+000048        P = P + 1;                                                      
+000049      END;                                                              
+000050      PRIMES(P,Q) = '1'B;                                                
+000051    END;                                                                
+000052                                                                        
+000053    I = 3;                                                              
+000054                                                                        
+000055    DO WHILE(I <= SN);                                                  
+000056      DO J = I ** 2 BY I * 2 TO N;                                      
+000057        P = 1 + J / 32767;                                              
+000058        Q = MOD(J,32767);                                                
+000059        IF (Q = 0) THEN DO;                                              
+000060          P = P - 1;                                                    
+000061          Q = 32767;                                                    
+000062        END;                                                            
+000063        PRIMES(P,Q) = '0'B;                                              
+000064       END;                                                              
+000065                                                                        
+000066      P = 1 + (I+2) / 32767;                                            
+000067      Q = MOD((I+2),32767);                                              
+000068      IF (Q = 0) THEN DO;                                                
+000069        P = P - 1;                                                      
+000070        Q = 32767;                                                      
+000071      END;                                                              
+000072      DO I = I + 2 BY 2 TO SN WHILE(PRIMES(P,Q) = '0'B);                
+000073        Q = Q + 2;                                                      
+000074        IF (Q > 32767) THEN DO;                                          
+000075          Q = Q - 32767;                                                
+000076          P = P + 1;                                                    
+000077        END;                                                            
+000078      END;                                                              
+000079    END;                                                                
+000080                                                                        
+000081    J = 1;                                                              
+000082    P = 1;                                                              
+000083    Q = 1;                                                              
+000084    PUT EDIT (2) (F(8,0)) FILE(SYSPRINT);                                
+000085    DO I = 3 BY 2 TO N;                                                  
+000086      Q = Q + 2;                                                        
+000087      IF (Q > 32767) THEN DO;                                            
+000088        Q = Q - 32767;                                                  
+000089        P = P + 1;                                                      
+000090      END;                                                              
+000091      IF PRIMES(P,Q) THEN DO;                                            
+000092          PUT EDIT (I) (F(8,0)) FILE(SYSPRINT);                          
+000093          J = J + 1;                                                    
+000094        END;                                                            
+000095    END;                                                                
+000096    PUT SKIP (2) FILE(SYSPRINT);                                        
+000097    PUT EDIT (J,' primes up to ',N,' found') (F(8,0),A(14),F(8,0),A(6))  
+000098     FILE(SYSPRINT);                                                    
+000099  END;                                                                  
+000100  END ERATOS;                                                            
+000101 /*                                                                      
+000102 //GO.SYSPRINT DD SYSOUT=*,DCB=(RECFM=FBA,LRECL=161,BLKSIZE=16100)      
+000103 //GO.SYSIN DD *                                                        
+000104 2000                                                                    
+    64KB ----+----1----+----2----+----3----+----4----+----5----+----6----+----7--
+ 000105 /*                                                                      
+ 000106 //                                                                      
+ ****** ****Zap****Autosave********* Bottom of Data ****************************
