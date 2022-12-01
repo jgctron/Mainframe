@@ -1,0 +1,171 @@
+ 64KB ----+----1----+----2----+----3----+----4----+----5----+----6----+----7-
+000001 //ZERO     JOB (COBOL),                                                
+000002 //             'Eratosthenes Sieve',                                  
+000003 //             CLASS=A,                                                
+000004 //             MSGCLASS=H,                                            
+000005 //             REGION=8M,TIME=1440,                                    
+000006 //             MSGLEVEL=(1,1)                                          
+000007 //********************************************************************
+000008 //*                                                                    
+000009 //* Name: SYS2.JCLLIB(PRIMCOB1)                                        
+000010 //*                                                                    
+000011 //* Desc: Sieve of Eratosthenes programmed in COBOL.                  
+000012 //*       All prime numbers up to the value entered via                
+000013 //*       //GO.SYSIN DD are computed. Due to a COBOL                  
+000014 //*       implementation limitation a maximum limit                    
+000015 //*       of 32767 can be entered.                                    
+000016 //*                                                                    
+000017 //********************************************************************
+000018 //PRIMES   EXEC COBUCG,                                                
+000019 //         PARM.COB='FLAGW,LOAD,SUPMAP,SIZE=2048K,BUF=1024K'          
+000020 //COB.SYSPUNCH DD DUMMY                                                
+000021 //COB.SYSIN    DD *                                                    
+  64KB ----+----1----+----2----+----3----+----4----+----5----+----6----+----7--
+000022    10 * //////////////////////////////////////////////////////////      
+000023    20 * // Name: Peter M. Maurer                                        
+000024    30 * // Program: Sieve of Eratosthenes                              
+000025    40 * // Due: Never                                                  
+000026    50 * // Language: COBOL                                              
+000027    60 * //                                                              
+000028    70 * // Changes:                                                    
+000029    80 * // - Juergen Winkelmann, 2014/10/25, o adaption to IBM OS COBOL
+000030    90 * //                                   o read limit from SYSIN    
+000031   100 * //                                   o n**2 (sqrt) shortcut    
+000032   110 * //                                   o skip even numbers        
+000033   120 * //                                   o compact output format    
+000034   130 * //                                   o 32767 prime flags        
+000035   140 * //////////////////////////////////////////////////////////      
+000036   150 ***                                                              
+000037   160 ***                                                              
+000038   170 ***                                                              
+000039   180  IDENTIFICATION DIVISION.                                        
+000040   190  PROGRAM-ID.  'PRIMES'.                                          
+000041   200 ***                                                              
+000042   210 ***                                                              
+   64KB ----+----1----+----2----+----3----+----4----+----5----+----6----+----7--
+ 000043   220 ***                                                              
+ 000044   230  ENVIRONMENT DIVISION.                                            
+ 000045   240 **                                                                
+ 000046   250 **                                                                
+ 000047   260  CONFIGURATION SECTION.                                          
+ 000048   270  SOURCE-COMPUTER.  IBM-360.                                      
+ 000049   280  OBJECT-COMPUTER.  IBM-360.                                      
+ 000050   290 **                                                                
+ 000051   300 **                                                                
+ 000052   310  INPUT-OUTPUT SECTION.                                            
+ 000053   320  FILE-CONTROL.                                                    
+ 000054   330      SELECT PRIMES-SYSIN                                          
+ 000055   340         ASSIGN TO UT-S-SYSIN.                                    
+ 000056   350 ***                                                              
+ 000057   360 ***                                                              
+ 000058   370 ***                                                              
+ 000059   380  DATA DIVISION.                                                  
+ 000060   390 **                                                                
+ 000061   400 **                                                                
+ 000062   410  FILE SECTION.                                                    
+ 000063   420  FD  PRIMES-SYSIN                                                
+000064   430      RECORDING MODE IS F                                          
+000065   440      RECORD CONTAINS 80 CHARACTERS                                
+000066   450      BLOCK  CONTAINS  1 RECORDS                                  
+000067   460      LABEL RECORDS ARE OMITTED                                    
+000068   470      DATA RECORD IS PRIMES-SYSIN-RECORD.                          
+000069   480  01  PRIMES-SYSIN-RECORD.                                        
+000070   490   02 PRIMES-SYSIN-NUMBER PIC 99999999 OCCURS 10.                  
+000071   500 **                                                                
+000072   510 **                                                                
+000073   520  WORKING-STORAGE SECTION.                                        
+000074   530      77 I PIC 99999999 COMP VALUE 1.                              
+000075   540      77 J PIC 99999999 COMP.                                      
+000076   550      77 K PIC 99999999 COMP VALUE 1.                              
+000077   560      77 N PIC 99999999 COMP.                                      
+000078   570      77 N-2 PIC 99999999 COMP.                                    
+000079   580      77 SQRTN PIC 99999999 COMP.                                  
+000080   590      77 PRODUCT PIC 99999999 COMP.                                
+000081   600      01 BLANK-LINE PIC X(160).                                    
+000082   610      01 OUT-INTEGER.                                              
+000083   620       02 SHOWIT PIC ZZZZZZZZ OCCURS 20.                          
+000084   630      01 OUT REDEFINES OUT-INTEGER.                                
+ 000085   640       02 OUT-LINE PIC X(160).                                    
+000086   650      01 PRIME-FLAGS.                                              
+000087   660       02 ISPRIME PIC 9 OCCURS 32767.                              
+000088   670 ***                                                              
+000089   680 ***                                                              
+000090   690 ***                                                              
+000091   700  PROCEDURE DIVISION.                                              
+000092   710 **                                                                
+000093   720 **                                                                
+000094   730  MAIN-PART.                                                      
+000095   740      OPEN INPUT PRIMES-SYSIN.                                    
+000096   750      READ PRIMES-SYSIN AT END DISPLAY '** EOF on SYSIN **'.      
+000097   760      MOVE PRIMES-SYSIN-NUMBER (1) TO N.                          
+000098   770      CLOSE PRIMES-SYSIN.                                          
+000099   780      SUBTRACT 2 FROM N GIVING N-2.                                
+000100   790 *                                                                
+000101   800      PERFORM NEXT-SQUARE UNTIL SQRTN GREATER N.                  
+000102   810      MOVE I TO SQRTN.                                            
+000103   820 *                                                                
+000104   830      MOVE 3 TO I.                                                
+000105   840      PERFORM INIT-1 UNTIL I GREATER N.                            
+000106   850 *                                                                
+000107   860      MOVE 3 TO I.                                                
+000108   870      PERFORM CHECK-NUMBER UNTIL I GREATER SQRTN OR EQUAL SQRTN.  
+000109   880 *                                                                
+000110   890      MOVE 3 TO I.                                                
+000111   900      MOVE 2 TO J.                                                
+000112   910      MOVE J TO SHOWIT (K).                                        
+000113   920      PERFORM PRINT UNTIL I GREATER N.                            
+000114   930 *                                                                
+000115   940      MOVE K TO SHOWIT (1).                                        
+000116   950      MOVE N TO SHOWIT (2).                                        
+000117   960      DISPLAY ' '.                                                
+000118   970      DISPLAY SHOWIT (1), ' primes up to ', SHOWIT (2), ' found.'.
+000119   980      STOP RUN.                                                    
+000120   990 **                                                                
+000121  1000 **                                                                
+000122  1010  INIT-1.                                                          
+000123  1020      MOVE 1 TO ISPRIME (I).                                      
+000124  1030      ADD 2 TO I.                                                  
+000125  1040 **                                                                
+000126  1050 **                                                                
+000127  1060  CHECK-NUMBER.                                                    
+000128  1070      PERFORM ADVANCE UNTIL I GREATER THAN SQRTN OR EQUAL TO SQRT  
+000129  1080 -     N OR ISPRIME (I) EQUAL TO 1.                                
+000130  1090      IF ISPRIME (I) EQUAL TO 1                                    
+000131  1100          ADD I I GIVING J                                        
+000132  1110          MULTIPLY I BY I GIVING PRODUCT                          
+000133  1120          PERFORM CROSS-OUT UNTIL PRODUCT GREATER THAN N.          
+000134  1130      ADD 2 TO I.                                                  
+000135  1140 **                                                                
+000136  1150 **                                                                
+000137  1160  ADVANCE.                                                        
+000138  1170      ADD 2 TO I.                                                  
+000139  1180 **                                                                
+000140  1190 **                                                                
+000141  1200  CROSS-OUT.                                                      
+000142  1210      MOVE 0 TO ISPRIME (PRODUCT).                                
+000143  1220      ADD J TO PRODUCT.                                            
+000144  1230 **                                                                
+000145  1240 **                                                                
+000146  1250  NEXT-SQUARE.                                                    
+000147  1260      ADD 1 TO I.                                                  
+000148  1270      MULTIPLY I BY I GIVING SQRTN.                                
+000149  1280 **                                                                
+000150  1290 **                                                                
+000151  1300  PRINT.                                                          
+000152  1310      IF ISPRIME (I) EQUAL TO 1                                    
+000153  1320          MOVE I TO SHOWIT (J)                                    
+000154  1330          ADD 1 TO K                                              
+000155  1340          ADD 1 TO J                                              
+000156  1350          IF J GREATER 20                                          
+000157  1360              DISPLAY OUT-LINE                                    
+000158  1370              MOVE BLANK-LINE TO OUT-LINE                          
+000159  1380              MOVE 1 TO J.                                        
+000160  1390      IF I GREATER N-2 AND J NOT EQUAL 1 DISPLAY OUT-LINE.        
+000161  1400      ADD 2 TO I.                                                  
+000162 /*                                                                      
+000163 //COB.SYSLIB   DD DSNAME=SYS1.COBLIB,DISP=SHR                          
+000164 //GO.SYSOUT   DD SYSOUT=*,DCB=(RECFM=FBA,LRECL=161,BLKSIZE=16100)      
+000165 //GO.SYSIN    DD *                                                      
+000166    99999                                                                
+000167 /*                                                                      
+000168 //                                                                      
